@@ -4,5 +4,9 @@
           {:target :browser
            :output-dir "public/js"
            :asset-path "/js"
+           :js-options {:resolve
+                        {"solid-js/web"
+                         {:target :npm
+                          :require "solid-js/web/dist/web.cjs"}}}
            :modules {:main {:entries [example.app]
                             :init-fn example.app/start!}}}}}
