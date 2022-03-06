@@ -1,4 +1,5 @@
 {:source-paths ["src" "example"]
+ :dependencies [[cljs-bean "1.8.0"]]
  :dev-http {8000 "public"}
  :builds {:app
           {:target :browser
