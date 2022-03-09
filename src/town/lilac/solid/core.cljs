@@ -1,19 +1,23 @@
 (ns town.lilac.solid.core
   (:require
-   ["solid-js" :as s]))
+   ["solid-js" :as s]
+   [goog.object :as gobj])
+  (:refer-clojure :exclude [merge]))
+
 
 ;;
 ;; core reactive signal fns
 ;;
 
-(def signal
+(defn signal
   "Creates a new reactive value given an initial value.
   Returns a tuple [getter setter]. Other reactive functions that call getter
   will update when setter is called with a new value.
 
   A second argument of options can be passed.
   See https://www.solidjs.com/docs/latest/api#createsignal"
-  s/createSignal)
+  [initial]
+  (s/createSignal initial))
 
 (def effect
   "Register a new side effect to run on change of any reactive values used
@@ -43,10 +47,56 @@
 (def root s/createRoot)
 (def current-owner s/getOwner)
 (def run-with-owner s/runWithOwner)
-;; TODO make this cljs friendly
-(def merge-props s/mergeProps)
-(def split-props s/splitProps)
-;; /end todo
+
+
+(defprotocol ISource
+  (-unwrap [x]))
+
+
+(deftype Source [props]
+  ;; TODO handle ns kw
+  IFn
+  (-invoke [_ k]
+    (gobj/get props (name k)))
+  (-invoke [_ k not-found]
+    (gobj/get props (name k) not-found))
+
+  ISource
+  (-unwrap [_] props))
+
+
+(extend-protocol ISource
+  ;; TODO shallowly convert to and from JS obj
+  PersistentArrayMap
+  (-unwrap [x] x)
+  PersistentHashMap
+  (-unwrap [x] x)
+  PersistentTreeMap
+  (-unwrap [x] x)
+
+  object
+  (-unwrap [x] x))
+
+
+(defn merge
+  ([source]
+   (->Source (s/mergeProps (-unwrap source))))
+  ([source1 source2]
+   (->Source (s/mergeProps (-unwrap source1) (-unwrap source2))))
+  ([source1 source2 & sources]
+   (->Source
+    (apply s/mergeProps (-unwrap source1) (-unwrap source2) (map -unwrap sources)))))
+
+
+(defn split
+  ([source ks]
+   ;; TODO handle ns kw
+   (map ->Source (s/splitProps (-unwrap source) (map name ks))))
+  ([source ks & more]
+   (map ->Source
+        (apply s/splitProps (-unwrap source) (map name ks) (map #(map name %) more)))))
+
+
 (def transition s/useTransition)
 (def start-transition s/startTransition)
 

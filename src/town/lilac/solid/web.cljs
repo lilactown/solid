@@ -2,7 +2,8 @@
   (:require
    ["solid-js/web" :as web]
    ["solid-js/h" :as h]
-   [cljs-bean.core :as b]))
+   #_[cljs-bean.core :as b]
+   [town.lilac.solid.core :as core]))
 
 
 (def render web/render)
@@ -10,8 +11,9 @@
 
 (def $d h)
 
+
 (defn $c
   [c & rest]
   (let [c' (fn [props]
-             (c (b/bean props)))]
+             (c (core/->Source props)))]
     (apply h c' rest)))

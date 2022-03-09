@@ -7,9 +7,9 @@
 
 (defn counter
   [props]
-  (let [initial-count (:initial-count props)
+  (let [initial-count (props :initial-count)
         [count set-count] (s/signal initial-count)]
-    (s/effect #(set-count (:initial-count props)))
+    (s/effect #(set-count (props :initial-count)))
     ($d "div"
         "Count: "
         count
